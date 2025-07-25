@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, Numeric, DateTime, Float
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Konfigurasi Database
@@ -15,7 +15,7 @@ Base = declarative_base()
 class Transaction(Base):
     __tablename__ = "transactions"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     tx_hash = Column(String, unique=True, index=True, nullable=False)
     from_address = Column(String, index=True, nullable=False)
     to_address = Column(String, index=True, nullable=False)

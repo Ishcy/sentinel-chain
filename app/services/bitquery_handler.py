@@ -95,12 +95,12 @@ def get_address_info(address: str):
         print(f"Terjadi error tak terduga: {e}")
         return None
 
-# --- Contoh Penggunaan (untuk testing) ---
-if __name__ == '__main__':
-    test_address = "0xf977814e90da44bfa03b6295a0616a897441acec" 
+# # --- Contoh Penggunaan (untuk testing) ---
+# if __name__ == '__main__':
+#     test_address = "0xf977814e90da44bfa03b6295a0616a897441acec" 
     
-    print(f"Mencari info lengkap untuk alamat: {test_address}")
-    info = get_address_info(test_address) 
+#     print(f"Mencari info lengkap untuk alamat: {test_address}")
+#     info = get_address_info(test_address) 
     
-    if info:
-        print(json.dumps(info, indent=2))
+#     if info:
+#         print(json.dumps(info, indent=2))

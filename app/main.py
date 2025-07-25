@@ -1,15 +1,21 @@
-from fastapi import FastAPI, Request
-import ujson
+from fastapi import FastAPI, Request, Depends
+from sqlalchemy.orm import Session
 from decimal import Decimal
-from config import ETH_THRESHOLD, WEI_IN_ETH
-from app.services.bitquery_handler import get_address_info
-from app.database import create_db_and_tables
+from datetime import datetime
+from . import crud, schemas, database
 
 app = FastAPI(title="Finance Alert MVP")
 
 @app.on_event("startup")
 def on_startup():
-    create_db_and_tables()
+    database.create_db_and_tables()
+
+def get_db():
+    db = database.SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/")
 def read_root():
@@ -17,62 +23,33 @@ def read_root():
     return {"status": "ok", "message": "Finance Alert Backend is running!"}
 
 @app.post("/webhook")
-async def receive_webhook(request: Request):
+async def receive_webhook(request: Request, db: Session = Depends(get_db)):
     """
-    Endpoint untuk menerima webhook, memfilter transaksi, dan
-    memperkaya (enrich) data alamat dengan Bitquery.
+    Endpoint untuk menerima webhook, memvalidasi data, dan menyimpannya ke DB.
     """
     payload = await request.json()
 
-    if not payload.get("txs"):
-        return {"status": "ignored", "message": "No transactions in payload"}
-
-    for tx in payload.get("txs", []):
-        value_wei_str = tx.get("value")
-        if not value_wei_str:
-            continue
-
+    # Ekstrak data transaksi dari payload Moralis
+    for tx_data in payload.get("txs", []):
         try:
-            value_wei = Decimal(value_wei_str)
-            value_eth = value_wei / WEI_IN_ETH
+            raw_timestamp = payload.get("block", {}).get("timestamp")
+            parsed_timestamp = datetime.fromtimestamp(int(raw_timestamp))
+            transaction_to_save = schemas.TransactionCreate(
+                tx_hash=tx_data.get("hash"),
+                from_address=tx_data.get("fromAddress"),
+                to_address=tx_data.get("toAddress"),
+                value_eth=Decimal(tx_data.get("value")) / 10**18,
+                timestamp=parsed_timestamp
+            )
 
-            if value_eth >= ETH_THRESHOLD:
-                print("\n" + "="*50)
-                print("🚨 TRANSAKSI BESAR TERDETEKSI 🚨")
-                print(f"  Hash: {tx.get('hash')}")
-                print(f"  Nilai: {value_eth:.4f} ETH")
-                print("-"*50)
-
-                # --- INTEGRASI BITQUERY ---
-                from_address = tx.get('fromAddress')
-                to_address = tx.get('toAddress')
-
-                # Get info untuk alamat pengirim
-                print(f"🔍 Get data untuk alamat PENGIRIM...")
-                from_info = get_address_info(from_address)
-                if from_info:
-                    print(f"  -> Alamat: {from_info.get('address')}")
-                    print(f"  -> Tag: {from_info.get('tag', 'N/A')}")
-                    print(f"  -> Total Transaksi: {from_info.get('transaction_count', 0)}")
-                else:
-                    print(f"  -> Gagal mendapatkan info untuk {from_address}")
-                
-                print("-"*50)
-
-                # Get info untuk alamat penerima
-                print(f"🔍 Get data untuk alamat PENERIMA...")
-                to_info = get_address_info(to_address)
-                if to_info:
-                    print(f"  -> Alamat: {to_info.get('address')}")
-                    print(f"  -> Tag: {to_info.get('tag', 'N/A')}")
-                    print(f"  -> Total Transaksi: {to_info.get('transaction_count', 0)}")
-                else:
-                    print(f"  -> Gagal mendapatkan info untuk {to_address}")
-
-                print("="*50 + "\n")
-                
-        except Exception as e:
-            print(f"Error memproses transaksi {tx.get('hash')}: {e}")
-            continue
+            # Panggil fungsi CRUD untuk menyimpan transaksi ke database
+            crud.create_transaction(db=db, tx=transaction_to_save)
             
-    return {"status": "success", "message": "Webhook processed"}
+            # Cetak konfirmasi ke konsol server
+            print(f"✅ Transaksi {transaction_to_save.tx_hash[:10]}... berhasil disimpan ke DB.")
+
+        except Exception as e:
+            print(f"❌ Gagal memproses atau menyimpan transaksi: {e}")
+            continue
+   
+    return {"status": "success", "message": "Webhook processed and data saved"}
