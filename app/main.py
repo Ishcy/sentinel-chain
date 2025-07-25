@@ -3,8 +3,13 @@ import ujson
 from decimal import Decimal
 from config import ETH_THRESHOLD, WEI_IN_ETH
 from app.services.bitquery_handler import get_address_info
+from app.database import create_db_and_tables
 
 app = FastAPI(title="Finance Alert MVP")
+
+@app.on_event("startup")
+def on_startup():
+    create_db_and_tables()
 
 @app.get("/")
 def read_root():
