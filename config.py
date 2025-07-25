@@ -17,6 +17,9 @@ WEI_IN_ETH = Decimal("1000000000000000000")
 
 # --- KUNCI API & TOKEN ---
 MORALIS_API_KEY = os.getenv("MORALIS_API_KEY")
+BITQUERY_API_KEY = os.getenv("BITQUERY_API_KEY")
 
 if not MORALIS_API_KEY:
     print("PERINGATAN: MORALIS_API_KEY tidak ditemukan di file .env.")
+if not BITQUERY_API_KEY:
+    print("PERINGATAN: BITQUERY_API_KEY tidak ditemukan di file .env.")
