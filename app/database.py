@@ -21,6 +21,7 @@ class Transaction(Base):
     to_address = Column(String, index=True, nullable=False)
     value_eth = Column(Numeric(18, 8), nullable=False)
     timestamp = Column(DateTime, nullable=False)
+    risk_score = Column(Float, default=0.0)
 
 # Model Tabel 'labeled_addresses'
 class LabeledAddress(Base):
