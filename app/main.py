@@ -30,12 +30,15 @@ async def receive_webhook(request: Request, db: Session = Depends(get_db)):
     # Ekstrak data transaksi dari payload Moralis
     for tx_data in payload.get("txs", []):
         try:
+            unix_timestamp = int(payload.get("block", {}).get("timestamp"))
+            readable_timestamp = datetime.fromtimestamp(unix_timestamp)
+
             transaction_schema = schemas.TransactionCreate(
                 tx_hash=tx_data.get("hash"),
                 from_address=tx_data.get("fromAddress"),
                 to_address=tx_data.get("toAddress"),
                 value_eth=Decimal(tx_data.get("value")) / 10**18,
-                timestamp=datetime.fromisoformat(payload.get("block", {}).get("timestamp"))
+                timestamp=readable_timestamp
             )
             
             db_transaction = crud.create_transaction(db=db, tx=transaction_schema)
