@@ -1,38 +1,31 @@
+import asyncio
 from sqlalchemy.orm import Session
 from . import crud
-from .services import bitquery_handler
+from .services import bitquery_handler, telegram_bot
 
-def analyze_transaction(db: Session, tx: crud.database.Transaction):
+async def analyze_transaction(db: Session, tx: crud.database.Transaction):
     """
     Fungsi utama untuk menganalisis sebuah transaksi yang sudah disimpan.
+    Sekarang menjadi async untuk menangani notifikasi.
     """
     print(f"🔬 Menganalisis transaksi: {tx.tx_hash[:10]}...")
     risk_score = 0.0
-
-    # --- Cek Nilai Transaksi ---
-    if tx.value_eth > 1000: # Ambang batas nilai besar (misal 1000 ETH)
-        risk_score += 20
-        print(f"  [+] Aturan Nilai: Transaksi > 1000 ETH. Skor +20. Total: {risk_score}")
-
-    # --- Analisis Alamat Pengirim (from_address) ---
-    from_address_info = analyze_address(db, tx.from_address)
-    if from_address_info.get("is_new_wallet"):
-        risk_score += 10
-        print(f"  [+] Aturan Pengirim: Alamat baru (< 5 tx). Skor +10. Total: {risk_score}")
     
-    # --- Analisis Alamat Penerima (to_address) ---
+    if tx.value_eth > 1000: risk_score += 20
+    from_address_info = analyze_address(db, tx.from_address)
     to_address_info = analyze_address(db, tx.to_address)
-    if to_address_info.get("label") == "Known Scammer: Fcoin":
-        risk_score += 50
-        print(f"  [+] Aturan Penerima: Dikirim ke alamat scammer. Skor +50. Total: {risk_score}")
-    elif "Exchange" in (to_address_info.get("label") or "") or "Binance" in (to_address_info.get("label") or ""):
-        risk_score -= 5 
-        print(f"  [-] Aturan Penerima: Dikirim ke bursa. Skor -5. Total: {risk_score}")
-
-    # --- Finalisasi ---
+    if "Scammer" in (to_address_info.get("label") or ""): risk_score += 50
+    if from_address_info.get("is_new_wallet"): risk_score += 10
+    
     final_score = max(0, risk_score)
     crud.update_transaction_risk_score(db, tx_id=tx.id, risk_score=final_score)
     print(f"✅ Analisis selesai. Skor akhir: {final_score}")
+
+    # --- LOGIKA NOTIFIKASI ---
+    if final_score > 50: # Ambang batas notifikasi
+        print("   -> Skor risiko tinggi terdeteksi. Menyiapkan notifikasi...")
+        message = telegram_bot.format_alert_message(tx, from_address_info, to_address_info, final_score)
+        await telegram_bot.send_telegram_alert(message)
 
 
 def analyze_address(db: Session, address: str) -> dict:

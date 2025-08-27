@@ -19,7 +19,12 @@ WEI_IN_ETH = Decimal("1000000000000000000")
 MORALIS_API_KEY = os.getenv("MORALIS_API_KEY")
 BITQUERY_API_KEY = os.getenv("BITQUERY_API_KEY")
 
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
 if not MORALIS_API_KEY:
     print("PERINGATAN: MORALIS_API_KEY tidak ditemukan di file .env.")
 if not BITQUERY_API_KEY:
     print("PERINGATAN: BITQUERY_API_KEY tidak ditemukan di file .env.")
+if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+    print("PERINGATAN: Kredensial Telegram tidak ditemukan di file .env.")

@@ -26,8 +26,6 @@ def read_root():
 @app.post("/webhook")
 async def receive_webhook(request: Request, db: Session = Depends(get_db)):
     payload = await request.json()
-
-    # Ekstrak data transaksi dari payload Moralis
     for tx_data in payload.get("txs", []):
         try:
             unix_timestamp = int(payload.get("block", {}).get("timestamp"))
@@ -44,8 +42,7 @@ async def receive_webhook(request: Request, db: Session = Depends(get_db)):
             db_transaction = crud.create_transaction(db=db, tx=transaction_schema)
             print(f"✅ Transaksi {db_transaction.tx_hash[:10]}... berhasil disimpan.")
 
-            analyzer.analyze_transaction(db=db, tx=db_transaction)
-            
+            await analyzer.analyze_transaction(db=db, tx=db_transaction)
         except Exception as e:
             print(f"❌ Gagal memproses atau menganalisis transaksi: {e}")
             continue
