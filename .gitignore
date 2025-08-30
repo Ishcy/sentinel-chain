@@ -11,3 +11,7 @@ __pycache__/
 # IDE specific files
 .idea/
 .vscode/
+
+tests/
+
+pytest.ini

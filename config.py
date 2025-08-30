@@ -21,6 +21,7 @@ BITQUERY_API_KEY = os.getenv("BITQUERY_API_KEY")
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not MORALIS_API_KEY:
     print("PERINGATAN: MORALIS_API_KEY tidak ditemukan di file .env.")
@@ -28,3 +29,5 @@ if not BITQUERY_API_KEY:
     print("PERINGATAN: BITQUERY_API_KEY tidak ditemukan di file .env.")
 if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
     print("PERINGATAN: Kredensial Telegram tidak ditemukan di file .env.")
+if not DATABASE_URL:
+    print("PERINGATAN: Kredensial Database tidak ditemukan di file .env.")

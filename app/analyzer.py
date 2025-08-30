@@ -26,7 +26,7 @@ async def analyze_transaction(db: Session, tx: crud.database.Transaction):
     print(f"✅ Analisis selesai. Skor akhir: {final_score}")
 
     # --- LOGIKA NOTIFIKASI ---
-    if final_score > 50:  # Ambang batas notifikasi
+    if final_score >= 50:  # Ambang batas notifikasi
         print("   -> Skor risiko tinggi terdeteksi. Menyiapkan notifikasi...")
         message = telegram_bot.format_alert_message(
             tx, from_address_info, to_address_info, final_score
