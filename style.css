@@ -1,0 +1,86 @@
+/* Mengganti tema dasar Streamlit */
+body {
+    background-color: #0E1117;
+    color: white;
+}
+
+/* Kustomisasi kartu KPI (st.metric) */
+[data-testid="stMetric"] {
+    background-color: #1E1E2F;
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* Mengubah warna label st.metric */
+[data-testid="stMetricLabel"] {
+    color: #A0A0A0;
+}
+
+/* Mengatur header utama */
+h1 {
+    color: #FFFFFF;
+}
+
+/* Tombol */
+.stButton>button {
+    background-color: #7B68EE;
+    color: white;
+    border-radius: 5px;
+    border: none;
+}
+.stButton>button:hover {
+    background-color: #5a4fbf;
+    color: white;
+}
+
+/* Kartu transaksi */
+.tx-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #1E1E2F;
+    flex-wrap: wrap; /* responsif */
+}
+
+/* Kolom skor */
+.tx-score {
+    flex: 0 0 80px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* Detail transaksi */
+.tx-detail {
+    flex: 1;
+    min-width: 200px;
+    padding-left: 15px;
+    margin-bottom: 10px;
+}
+
+/* Tombol etherscan */
+.tx-button {
+    flex: 0 0 150px;
+    text-align: right;
+    min-width: 150px;
+}
+
+.etherscan-btn {
+    background-color: #7B68EE;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    transition: 0.3s;
+}
+
+.etherscan-btn:hover {
+    background-color: #5a4fcf;
+}
